@@ -5,10 +5,9 @@ import (
 	"testing"
 )
 
-func TestImport(t *testing.T) {
-	//const testfile = "testdata/test.xml"
-	const testfile = "/home/remy/Documents/banque/compta.xml"
-	f, err := ImportFile(testfile)
+func TestRead(t *testing.T) {
+	const testfile = "testdata/test.xml"
+	f, err := ReadFile(testfile)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -18,4 +17,18 @@ func TestImport(t *testing.T) {
 	}
 
 	t.Logf("%s", b)
+}
+
+func TestImport(t *testing.T) {
+	const testfile = "testdata/test.xml"
+	book, err := ImportFile(testfile)
+	if err != nil {
+		t.Fatal(err)
+	}
+	js, err := json.MarshalIndent(book, "", "  ")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	t.Logf("%s", js)
 }
