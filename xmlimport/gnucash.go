@@ -72,21 +72,28 @@ func (file *File) Import() (book *types.Book, err error) {
 	book = new(types.Book)
 	// Parse accounts.
 	accountsById := make(map[GUID]*types.Account, len(file.Book.Accounts))
+	parents := make(map[GUID]GUID, len(file.Book.Accounts))
 	for _, xmlacct := range file.Book.Accounts {
-		account := &types.Account{
-			Name: xmlacct.Name,
-			Type: xmlacct.Type,
+		act, err := xmlacct.Import()
+		if err != nil {
+			return nil, err
 		}
-		slots := xmlacct.Slots.Map()
-		if slots != nil && slots["notes"] != nil {
-			if notes, ok := slots["notes"].(string); ok {
-				account.Description = notes
-			} else {
-				return nil, fmt.Errorf("description of account %s is not a string", account.Name)
-			}
+		accountsById[xmlacct.Id] = &act
+		parents[xmlacct.Id] = xmlacct.Parent
+		book.Accounts = append(book.Accounts, &act)
+	}
+
+	// Resolve account hierarchy.
+	actNames := make(map[GUID]string)
+	for _, xmlacct := range file.Book.Accounts {
+		name := xmlacct.Name
+		for t := xmlacct.Parent; t != ""; t = parents[t] {
+			name = accountsById[t].Name + "/" + name
 		}
-		accountsById[xmlacct.Id] = account
-		book.Accounts = append(book.Accounts, account)
+		actNames[xmlacct.Id] = name
+	}
+	for guid, name := range actNames {
+		accountsById[guid].Name = name
 	}
 
 	// Parse transactions.
@@ -122,6 +129,22 @@ type Account struct {
 	Type    string   `xml:"type"`
 	Slots   Slots    `xml:"slots>slot"`
 	Parent  GUID     `xml:"parent"`
+}
+
+func (xmlact *Account) Import() (act types.Account, err error) {
+	act = types.Account{
+		Name: xmlact.Name,
+		Type: xmlact.Type,
+	}
+	slots := xmlact.Slots.Map()
+	if slots != nil && slots["notes"] != nil {
+		if notes, ok := slots["notes"].(string); ok {
+			act.Description = notes
+		} else {
+			return act, fmt.Errorf("description of account %s is not a string", act.Name)
+		}
+	}
+	return act, nil
 }
 
 type Transaction struct {
