@@ -1,6 +1,8 @@
 package types
 
 import (
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -37,4 +39,26 @@ type Flow struct {
 type Book struct {
 	Accounts     []*Account
 	Transactions []Transaction
+}
+
+func ParsePrice(s string) float64 {
+	if sl := strings.IndexRune(s, '/'); sl < 0 {
+		x, err := strconv.Atoi(s)
+		if err != nil {
+			panic(err)
+		}
+		return float64(x)
+	} else {
+		num, den := s[:sl], s[sl+1:]
+		n, err := strconv.Atoi(num)
+		if err != nil {
+			panic(err)
+		}
+		d, err := strconv.Atoi(den)
+		if err != nil {
+			panic(err)
+		}
+		return float64(n) / float64(d)
+	}
+	panic("unreachable")
 }
