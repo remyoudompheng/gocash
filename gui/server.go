@@ -15,8 +15,7 @@ import (
 func StartServer(addr string, book *types.Book) error {
 	parseTemplates()
 	http.Handle("/", curryBook(book, pageHome))
-	http.Handle("/accounts/", curryBook(book, pageBook))
-	http.Handle("/transactions/", curryBook(book, pageAccount))
+	http.Handle("/account/", curryBook(book, pageAccount))
 	http.Handle("/static/", http.StripPrefix("/static/",
 		http.FileServer(http.Dir(StaticDir)),
 	))
@@ -64,7 +63,7 @@ func parseTemplates() {
 }
 
 type templateData struct {
-	Title string
-	Book  *types.Book
-	Data  map[string]interface{}
+	Title   string
+	Book    *types.Book
+	Account *types.Account
 }
