@@ -5,8 +5,8 @@ import (
 	"flag"
 	"log"
 
-	"github.com/remyoudompheng/gocash/xmlimport"
 	"github.com/remyoudompheng/gocash/gui"
+	"github.com/remyoudompheng/gocash/xmlimport"
 )
 
 func init() {

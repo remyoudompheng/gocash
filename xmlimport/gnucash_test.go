@@ -2,6 +2,7 @@ package xmlimport
 
 import (
 	"encoding/json"
+	"math/big"
 	"strconv"
 	"strings"
 	"testing"
@@ -36,29 +37,27 @@ func TestImport(t *testing.T) {
 }
 
 func TestImportReal(t *testing.T) {
-	const testfile = "testdata/test.xml"
+	const testfile = "/home/remy/Documents/banque/compta.xml"
 	book, err := ImportFile(testfile)
 	if err != nil {
 		t.Fatal(err)
 	}
 	// Consistency check.
 	t.Logf("%d accounts, %d transactions", len(book.Accounts), len(book.Transactions))
-	grandtotal := 0.0
-	for _, acct := range book.Accounts {
-		count := 0
-		total := 0.0
-		for _, trans := range book.Transactions {
-			for _, flow := range trans.Flows {
-				if flow.Account == acct {
-					count++
-					total += parsePrice(flow.Price)
-				}
-			}
+	book.Recompute()
+	trnCount := make(map[*types.Account]int)
+	for _, trans := range book.Transactions {
+		for _, flow := range trans.Flows {
+			trnCount[flow.Account]++
 		}
-		t.Logf("account %q: %d transactions, %.2f", acct.Name, count, total)
-		grandtotal += total
 	}
-	t.Logf("total: %.2f (should be 0.0)", grandtotal)
+
+	total := new(big.Rat)
+	for act, count := range trnCount {
+		t.Logf("account %q: %d transactions, %s", act.Name, count, book.Balance[act].FloatString(2))
+		total = total.Add(total, book.Balance[act])
+	}
+	t.Logf("total: %.2f (should be 0.0)", total.FloatString(2))
 }
 
 func parsePrice(s string) float64 {

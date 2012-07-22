@@ -1,13 +1,9 @@
 package types
 
 import (
-	"strconv"
-	"strings"
+	"math/big"
 	"time"
 )
-
-// Cents represent a money amount in 1/100s.
-type Cents int64
 
 type Account struct {
 	Name          string    // A slash separated hierarchy of words.
@@ -27,10 +23,12 @@ type Transaction struct {
 	Flows       []Flow
 }
 
+// A Flow is a part of a split transaction. A flow is positive for
+// debit actions, negative for credit actions.
 type Flow struct {
 	Memo           string
 	Account        *Account `json:"-"`
-	Price          string
+	Price          *big.Rat
 	Reconciled     bool
 	ReconciledTime time.Time
 }
@@ -39,26 +37,4 @@ type Flow struct {
 type Book struct {
 	Accounts     []*Account
 	Transactions []Transaction
-}
-
-func ParsePrice(s string) float64 {
-	if sl := strings.IndexRune(s, '/'); sl < 0 {
-		x, err := strconv.Atoi(s)
-		if err != nil {
-			panic(err)
-		}
-		return float64(x)
-	} else {
-		num, den := s[:sl], s[sl+1:]
-		n, err := strconv.Atoi(num)
-		if err != nil {
-			panic(err)
-		}
-		d, err := strconv.Atoi(den)
-		if err != nil {
-			panic(err)
-		}
-		return float64(n) / float64(d)
-	}
-	panic("unreachable")
 }

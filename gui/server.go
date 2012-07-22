@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"html/template"
 	"log"
+	"math/big"
 	"net/http"
 	"path/filepath"
 
@@ -48,9 +49,11 @@ func tplPath(name string) string { return filepath.Join(StaticDir, "templates", 
 
 func parseTemplate(name string) (*template.Template, error) {
 	return template.New(name).
-		Funcs(template.FuncMap{"parsePrice": types.ParsePrice}).
+		Funcs(template.FuncMap{"money": showMoney}).
 		ParseFiles(tplPath("common"), tplPath(name))
 }
+
+func showMoney(amount *big.Rat) string { return amount.FloatString(2) }
 
 var homeTpl, bookTpl, accountTpl *template.Template
 

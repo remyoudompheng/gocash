@@ -7,6 +7,7 @@ import (
 	"encoding/xml"
 	"fmt"
 	"io"
+	"math/big"
 	"os"
 	"strconv"
 	"time"
@@ -205,7 +206,12 @@ func (split *Split) Import(accts map[GUID]*types.Account) (flow types.Flow, err 
 	if flow.Account == nil {
 		return flow, fmt.Errorf("account %s does not exist", split.Account)
 	}
-	flow.Price = split.Value
+	ok := false
+	flow.Price, ok = new(big.Rat).SetString(split.Value)
+	if !ok {
+		err = fmt.Errorf("invalid value format: %q", split.Value)
+		return
+	}
 	flow.Memo = split.Memo
 	switch split.Reconciled {
 	case "y":

@@ -2,25 +2,21 @@
 {{ end }}
 
 {{ define "body" }}
-<h1>Gocash</h1>
+<h1>Gocash: account overview</h1>
 
-<p>Accounts:</p>
-<ul>
-{{ range $acct := $.Book.Accounts }}
-<li>{{ $acct.Name }}</li>
-{{ end }}
-</ul>
-
-<p>Transactions:</p>
-<ul>
-{{ range $trn := $.Book.Transactions }}
-<li>{{ $trn.Date.Format "2006-01-02" }}: {{ $trn.Description }}
-  <ul>
-    {{ range $flow := $trn.Flows }}
-    <li>{{ $flow.Account.Name }} {{ parsePrice $flow.Price | printf "%.2f" }}</li>
+<table>
+<thead>
+    <tr>
+       <th>Account</th>
+       <th>Balance</th>
+    </tr>
+</thead>
+<tbody>
+    {{ range $acct := $.Book.Accounts }}
+    <tr>
+        <td><a href="/account/?name={{ $acct.Name }}">{{ $acct.Name }}</a></td>
+        <td>{{ with $bal := index $.Book.Balance $acct }}{{ money $bal }}{{ end }}</td>
+    </tr>
     {{ end }}
-  </ul>
-</li>
-{{ end }}
-</ul>
+</tbody>
 {{ end }}
