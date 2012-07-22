@@ -1,19 +1,20 @@
 package types
 
 import (
+	"fmt"
 	"math/big"
 	"sort"
 	"time"
 )
 
 type Account struct {
-	Name          string    // A slash separated hierarchy of words.
-	Type          string    // BANK, EXPENSE, INCOME, ASSET, CASH.
-	Unit          string    // A currency or security name.
-	Denom         int       // The unit denominator (usually 100).
-	Description   string    // A free text description.
-	LastReconcile time.Time // The time of last reconciliation.
-	Children      []*Account
+	Name          string     // A slash separated hierarchy of words.
+	Type          string     // BANK, EXPENSE, INCOME, ASSET, CASH.
+	Unit          string     // A currency or security name.
+	Denom         int        // The unit denominator (usually 100).
+	Description   string     // A free text description.
+	LastReconcile time.Time  // The time of last reconciliation.
+	Children      []*Account `json:"-"`
 }
 
 type Transaction struct {
@@ -30,11 +31,34 @@ type Transaction struct {
 type Flow struct {
 	Memo           string
 	Account        *Account `json:"-"`
-	Price          *big.Rat
+	Price          *Amount
 	Reconciled     bool
 	ReconciledTime time.Time
-	Parent         *Transaction
+	Parent         *Transaction `json:"-"`
 }
+
+type Amount big.Rat
+
+func (amt *Amount) Rat() *big.Rat               { return (*big.Rat)(amt) }
+func (amt *Amount) SetRat(rat *big.Rat) *Amount { (*big.Rat)(amt).Set(rat); return amt }
+
+func (amt *Amount) String() string {
+	return (*big.Rat)(amt).FloatString(2)
+}
+
+func (amt *Amount) MarshalJSON() (s []byte, err error) {
+	return []byte((*big.Rat)(amt).RatString()), nil
+}
+
+func (amt *Amount) UnmarshalJSON(s []byte) error {
+	_, ok := (*big.Rat)(amt).SetString(string(s))
+	if !ok {
+		return fmt.Errorf("invalid price string %q", s)
+	}
+	return nil
+}
+
+func (x *Amount) Add(y *Amount) *Amount { (*big.Rat)(x).Add((*big.Rat)(x), (*big.Rat)(y)); return x }
 
 // An accounting book.
 type Book struct {
@@ -42,9 +66,9 @@ type Book struct {
 	Transactions []Transaction
 
 	// Computed data.
-	Balance map[*Account]*big.Rat `json:"-"`
+	Balance map[*Account]*Amount `json:"-"`
 	// Flows by account.
-	Flows map[*Account][]*Flow
+	Flows map[*Account][]*Flow `json:"-"`
 }
 
 func (book *Book) Recompute() {
@@ -53,15 +77,15 @@ func (book *Book) Recompute() {
 }
 
 // BalanceCents returns the per-account balance 
-func (book *Book) computeBalances() (balance map[*Account]*big.Rat) {
-	balance = make(map[*Account]*big.Rat, len(book.Accounts))
+func (book *Book) computeBalances() (balance map[*Account]*Amount) {
+	balance = make(map[*Account]*Amount, len(book.Accounts))
 	for _, act := range book.Accounts {
-		balance[act] = new(big.Rat)
+		balance[act] = new(Amount)
 	}
 	for _, trn := range book.Transactions {
 		for _, f := range trn.Flows {
 			bal := balance[f.Account]
-			balance[f.Account] = bal.Add(bal, f.Price)
+			balance[f.Account] = bal.Add(f.Price)
 		}
 	}
 	return

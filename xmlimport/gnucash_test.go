@@ -2,7 +2,6 @@ package xmlimport
 
 import (
 	"encoding/json"
-	"math/big"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -65,12 +64,12 @@ func TestImportReal(t *testing.T) {
 		}
 	}
 
-	total := new(big.Rat)
+	total := new(types.Amount)
 	for act, count := range trnCount {
-		t.Logf("account %q: %d transactions, %s", act.Name, count, book.Balance[act].FloatString(2))
-		total = total.Add(total, book.Balance[act])
+		t.Logf("account %q: %d transactions, %s", act.Name, count, book.Balance[act])
+		total = total.Add(book.Balance[act])
 	}
-	t.Logf("total: %.2f (should be 0.0)", total.FloatString(2))
+	t.Logf("total: %s (should be 0.0)", total)
 }
 
 func parsePrice(s string) float64 {
