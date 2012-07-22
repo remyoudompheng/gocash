@@ -3,37 +3,50 @@ package xmlimport
 import (
 	"encoding/json"
 	"math/big"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"testing"
+
+	"github.com/remyoudompheng/gocash/types"
 )
 
-func TestRead(t *testing.T) {
-	const testfile = "testdata/test.xml"
-	f, err := ReadFile(testfile)
+func mustStrings(s []string, err error) []string {
 	if err != nil {
-		t.Fatal(err)
+		panic(err)
 	}
-	b, err := json.MarshalIndent(f, "", "  ")
-	if err != nil {
-		t.Fatal(err)
-	}
+	return s
+}
 
-	t.Logf("%s", b)
+var testfiles = mustStrings(filepath.Glob("testdata/*.gml2"))
+
+func TestRead(t *testing.T) {
+	for _, testfile := range testfiles {
+		f, err := ReadFile(testfile)
+		if err != nil {
+			t.Fatal(err)
+		}
+		b, err := json.MarshalIndent(f, "", "  ")
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		t.Logf("%s", b)
+	}
 }
 
 func TestImport(t *testing.T) {
-	const testfile = "testdata/test.xml"
-	book, err := ImportFile(testfile)
-	if err != nil {
-		t.Fatal(err)
+	for _, testfile := range testfiles {
+		book, err := ImportFile(testfile)
+		if err != nil {
+			t.Fatal(err)
+		}
+		js, err := json.MarshalIndent(book, "", "  ")
+		if err != nil {
+			t.Fatal(err)
+		}
+		t.Logf("%s", js)
 	}
-	js, err := json.MarshalIndent(book, "", "  ")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	t.Logf("%s", js)
 }
 
 func TestImportReal(t *testing.T) {
