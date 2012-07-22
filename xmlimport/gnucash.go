@@ -89,9 +89,17 @@ func (file *File) Import() (book *types.Book, err error) {
 	for _, xmlacct := range file.Book.Accounts {
 		name := xmlacct.Name
 		for t := xmlacct.Parent; t != ""; t = parents[t] {
-			name = accountsById[t].Name + "/" + name
+			act := accountsById[t]
+			if act.Type == "ROOT" {
+				name = "/" + name
+			} else {
+				name = accountsById[t].Name + "/" + name
+			}
 		}
 		actNames[xmlacct.Id] = name
+		if parent := accountsById[xmlacct.Parent]; parent != nil {
+			parent.Children = append(parent.Children, accountsById[xmlacct.Id])
+		}
 	}
 	for guid, name := range actNames {
 		accountsById[guid].Name = name

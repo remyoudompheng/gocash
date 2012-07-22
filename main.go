@@ -26,10 +26,11 @@ func main() {
 
 	book, err := xmlimport.ImportFile(filename)
 	if err != nil {
-		log.Fatalf("ERROR: failed to load %q: %s", filename,  err)
+		log.Fatalf("ERROR: failed to load %q: %s", filename, err)
 	}
 	log.Printf("Loaded %q: %d accounts, %d transactions",
 		filename, len(book.Accounts), len(book.Transactions))
+	book.Recompute()
 
 	err = gui.StartServer(httpAddr, book)
 	if err != nil {
