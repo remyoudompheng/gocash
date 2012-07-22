@@ -132,18 +132,20 @@ type Commodity struct {
 }
 
 type Account struct {
-	XMLName xml.Name `xml:"http://www.gnucash.org/XML/gnc account"`
-	Name    string   `xml:"name"`
-	Id      GUID     `xml:"id"`
-	Type    string   `xml:"type"`
-	Slots   Slots    `xml:"slots>slot"`
-	Parent  GUID     `xml:"parent"`
+	XMLName   xml.Name  `xml:"http://www.gnucash.org/XML/gnc account"`
+	Name      string    `xml:"name"`
+	Id        GUID      `xml:"id"`
+	Commodity Commodity `xml:"commodity"`
+	Type      string    `xml:"type"`
+	Slots     Slots     `xml:"slots>slot"`
+	Parent    GUID      `xml:"parent"`
 }
 
 func (xmlact *Account) Import() (act types.Account, err error) {
 	act = types.Account{
 		Name: xmlact.Name,
 		Type: xmlact.Type,
+		Unit: xmlact.Commodity.Id,
 	}
 	slots := xmlact.Slots.Map()
 	if slots != nil && slots["notes"] != nil {

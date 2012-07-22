@@ -1,0 +1,5 @@
+/* Links. */
+a:link, a:visited { text-decoration: none; }
+a:hover           { text-decoration: underline; color: blue; }
+
+td.amount { text-align: right; }

@@ -48,11 +48,28 @@ func tplPath(name string) string { return filepath.Join(StaticDir, "templates", 
 
 func parseTemplate(name string) (*template.Template, error) {
 	return template.New(name).
-		Funcs(template.FuncMap{"money": showMoney}).
+		Funcs(template.FuncMap{
+		"money": showMoney,
+		"cumul": cumulFlows,
+	}).
 		ParseFiles(tplPath("common"), tplPath(name))
 }
 
-func showMoney(amount *big.Rat) string { return amount.FloatString(2) }
+func showMoney(amount *big.Rat) string {
+	if amount == nil {
+		return "0.00"
+	}
+	return amount.FloatString(2)
+}
+
+func cumulFlows(flows []*types.Flow) (bals []*big.Rat) {
+	x := new(big.Rat)
+	for _, f := range flows {
+		x = x.Add(x, f.Price)
+		bals = append(bals, new(big.Rat).Set(x))
+	}
+	return
+}
 
 var homeTpl, bookTpl, accountTpl *template.Template
 

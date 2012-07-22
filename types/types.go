@@ -55,12 +55,12 @@ func (book *Book) Recompute() {
 // BalanceCents returns the per-account balance 
 func (book *Book) computeBalances() (balance map[*Account]*big.Rat) {
 	balance = make(map[*Account]*big.Rat, len(book.Accounts))
+	for _, act := range book.Accounts {
+		balance[act] = new(big.Rat)
+	}
 	for _, trn := range book.Transactions {
 		for _, f := range trn.Flows {
 			bal := balance[f.Account]
-			if bal == nil {
-				bal = new(big.Rat)
-			}
 			balance[f.Account] = bal.Add(bal, f.Price)
 		}
 	}

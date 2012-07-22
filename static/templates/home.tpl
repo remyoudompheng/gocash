@@ -4,9 +4,9 @@
 {{ define "body" }}
 <h1>Gocash: account overview</h1>
 
-<table>
+<table class="ui-widget ui-widget-content">
 <thead>
-    <tr>
+    <tr class="ui-widget-header">
        <th>Account</th>
        <th>Balance</th>
     </tr>
@@ -15,7 +15,7 @@
     {{ range $acct := $.Book.Accounts }}
     <tr>
         <td><a href="/account/?name={{ $acct.Name }}">{{ $acct.Name }}</a></td>
-        <td>{{ with $bal := index $.Book.Balance $acct }}{{ money $bal }}{{ end }}</td>
+        <td class="amount">{{ index $.Book.Balance $acct | money }} {{ $acct.Unit }}</td>
     </tr>
     {{ end }}
 </tbody>
