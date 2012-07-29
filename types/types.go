@@ -8,6 +8,7 @@ import (
 )
 
 type Account struct {
+	Id            GUID
 	Name          string     // A slash separated hierarchy of words.
 	Type          string     // BANK, EXPENSE, INCOME, ASSET, CASH.
 	Unit          string     // A currency or security name.
@@ -18,6 +19,7 @@ type Account struct {
 }
 
 type Transaction struct {
+	Id          GUID
 	Date        time.Time // The value date of the transaction.
 	Stamp       time.Time // When the transaction was entered.
 	Description string
@@ -29,6 +31,7 @@ type Transaction struct {
 // A Flow is a part of a split transaction. A flow is positive for
 // debit actions, negative for credit actions.
 type Flow struct {
+	Id             GUID
 	Memo           string
 	Account        *Account `json:"-"`
 	Price          *Amount
