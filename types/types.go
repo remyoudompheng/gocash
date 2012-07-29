@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math/big"
 	"sort"
+	"strconv"
 	"time"
 )
 
@@ -50,11 +51,15 @@ func (amt *Amount) String() string {
 }
 
 func (amt *Amount) MarshalJSON() (s []byte, err error) {
-	return []byte((*big.Rat)(amt).RatString()), nil
+	return []byte(string('"') + (*big.Rat)(amt).RatString() + string('"')), nil
 }
 
 func (amt *Amount) UnmarshalJSON(s []byte) error {
-	_, ok := (*big.Rat)(amt).SetString(string(s))
+	str, err := strconv.Unquote(string(s))
+	if err != nil {
+		return fmt.Errorf("invalid price string %q: %s", s, err)
+	}
+	_, ok := (*big.Rat)(amt).SetString(str)
 	if !ok {
 		return fmt.Errorf("invalid price string %q", s)
 	}
