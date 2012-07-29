@@ -61,7 +61,7 @@ func (amt *Amount) UnmarshalJSON(s []byte) error {
 	}
 	_, ok := (*big.Rat)(amt).SetString(str)
 	if !ok {
-		return fmt.Errorf("invalid price string %q", s)
+		return fmt.Errorf("invalid price string %q", str)
 	}
 	return nil
 }
@@ -70,8 +70,8 @@ func (x *Amount) Add(y *Amount) *Amount { (*big.Rat)(x).Add((*big.Rat)(x), (*big
 
 // An accounting book.
 type Book struct {
-	Accounts     []*Account
-	Transactions []Transaction
+	Accounts     map[GUID]*Account
+	Transactions map[GUID]*Transaction
 
 	// Computed data.
 	Balance map[*Account]*Amount `json:"-"`
@@ -80,23 +80,19 @@ type Book struct {
 }
 
 func (book *Book) Recompute() {
-	book.Balance = book.computeBalances()
 	book.Flows = book.sortFlows()
+	book.Balance = make(map[*Account]*Amount, len(book.Accounts))
+	for _, act := range book.Accounts {
+		book.Balance[act] = sumFlows(book.Flows[act])
+	}
 }
 
-// BalanceCents returns the per-account balance 
-func (book *Book) computeBalances() (balance map[*Account]*Amount) {
-	balance = make(map[*Account]*Amount, len(book.Accounts))
-	for _, act := range book.Accounts {
-		balance[act] = new(Amount)
+func sumFlows(flows []*Flow) *Amount {
+	total := new(Amount)
+	for _, f := range flows {
+		total = total.Add(f.Price)
 	}
-	for _, trn := range book.Transactions {
-		for _, f := range trn.Flows {
-			bal := balance[f.Account]
-			balance[f.Account] = bal.Add(f.Price)
-		}
-	}
-	return
+	return total
 }
 
 func (book *Book) sortFlows() (flows map[*Account][]*Flow) {
@@ -104,7 +100,7 @@ func (book *Book) sortFlows() (flows map[*Account][]*Flow) {
 	for it, trn := range book.Transactions {
 		for i, f := range trn.Flows {
 			flows[f.Account] = append(flows[f.Account], &trn.Flows[i])
-			trn.Flows[i].Parent = &book.Transactions[it]
+			trn.Flows[i].Parent = book.Transactions[it]
 		}
 	}
 	for _, actflows := range flows {

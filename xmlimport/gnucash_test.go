@@ -30,7 +30,7 @@ func TestRead(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		t.Logf("%s", b)
+		t.Logf("%.1024s [...]", b)
 	}
 }
 
@@ -42,7 +42,7 @@ func TestImport(t *testing.T) {
 		}
 		js, err := json.MarshalIndent(book, "", "  ")
 		if err != nil {
-			t.Fatal(err)
+			t.Fatalf("error in %s: %s", testfile, err)
 		}
 		t.Logf("%s", js)
 	}
