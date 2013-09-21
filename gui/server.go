@@ -8,12 +8,18 @@ import (
 	"net/http"
 	"path/filepath"
 
+	"github.com/remyoudompheng/go-misc/weblibs"
+
 	"github.com/remyoudompheng/gocash/types"
 	"io"
 )
 
 func StartServer(addr string, book *types.Book) error {
 	parseTemplates()
+	err := weblibs.RegisterAll(http.DefaultServeMux)
+	if err != nil {
+		return err
+	}
 	http.Handle("/", curryBook(book, pageHome))
 	http.Handle("/account/", curryBook(book, pageAccount))
 	http.Handle("/static/", http.StripPrefix("/static/",

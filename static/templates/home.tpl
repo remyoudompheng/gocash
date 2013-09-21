@@ -4,9 +4,9 @@
 {{ define "body" }}
 <h1>Gocash: account overview</h1>
 
-<table class="ui-widget ui-widget-content">
+<table class="table">
 <thead>
-    <tr class="ui-widget-header">
+    <tr>
        <th>Account</th>
        <th>Balance</th>
     </tr>

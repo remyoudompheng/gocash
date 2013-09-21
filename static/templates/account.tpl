@@ -8,13 +8,14 @@
 
 <h2>Transactions</h2>
 
-<table class="ui-widget ui-widget-content">
+<table class="table">
     {{ $flows := index .Book.Flows .Account }}
     {{ $balance := cumul $flows }}
     <thead>
-    <tr class="ui-widget-header">
+    <tr>
         <th>Date</th>
         <th>Description</th>
+        <th>Memo</th>
         <th>Amount</th>
         <th>Balance</th>
     </tr>
@@ -24,6 +25,7 @@
     <tr>
         <td>{{ $flow.Parent.Date.Format "2006-01-02" }}</td>
         <td>{{ $flow.Parent.Description }}</td>
+        <td>{{ $flow.Memo }}</td>
         <td class="amount">{{ $flow.Price }}</td>
         <td class="amount">{{ index $balance $i }} {{ .Account.Unit}}</td>
     </tr>
