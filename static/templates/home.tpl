@@ -12,7 +12,7 @@
     </tr>
 </thead>
 <tbody>
-    {{ range $acct := $.Book.Accounts }}
+    {{ range $acct := sortAccts $.Book }}
     <tr>
         <td><a href="/account/?name={{ $acct.Name }}">{{ $acct.Name }}</a></td>
         <td class="amount">{{ index $.Book.Balance $acct }} {{ $acct.Unit }}</td>

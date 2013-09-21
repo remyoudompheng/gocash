@@ -3,15 +3,17 @@ package gui
 import (
 	"bytes"
 	"html/template"
+	"io"
 	"log"
 	"math/big"
 	"net/http"
+	_ "net/http/pprof"
 	"path/filepath"
+	"sort"
 
 	"github.com/remyoudompheng/go-misc/weblibs"
 
 	"github.com/remyoudompheng/gocash/types"
-	"io"
 )
 
 func StartServer(addr string, book *types.Book) error {
@@ -54,7 +56,10 @@ func tplPath(name string) string { return filepath.Join(StaticDir, "templates", 
 
 func parseTemplate(name string) (*template.Template, error) {
 	return template.New(name).
-		Funcs(template.FuncMap{"cumul": cumulFlows}).
+		Funcs(template.FuncMap{
+		"sortAccts": sortAccts,
+		"cumul":     cumulFlows,
+	}).
 		ParseFiles(tplPath("common"), tplPath(name))
 }
 
@@ -65,6 +70,26 @@ func cumulFlows(flows []*types.Flow) (bals []*types.Amount) {
 		bals = append(bals, new(types.Amount).SetRat(x))
 	}
 	return
+}
+
+func sortAccts(b *types.Book) []*types.Account {
+	accts := make([]*types.Account, 0, len(b.Accounts))
+	for _, a := range b.Accounts {
+		accts = append(accts, a)
+	}
+	sort.Sort(byTypeAndName(accts))
+	return accts
+}
+
+type byTypeAndName []*types.Account
+
+func (s byTypeAndName) Len() int      { return len(s) }
+func (s byTypeAndName) Swap(i, j int) { s[i], s[j] = s[j], s[i] }
+func (s byTypeAndName) Less(i, j int) bool {
+	if s[i].Type != s[j].Type {
+		return s[i].Type < s[j].Type
+	}
+	return s[i].Name < s[j].Name
 }
 
 var homeTpl, bookTpl, accountTpl *template.Template
